@@ -1,0 +1,46 @@
+
+OSPF =====>
+
+set chassis slot ua phylinux enable port 1 admin-state up
+set interfaces eth-ua/1 unit 0 family inet address {inet_address}
+commit
+set system management-mode dcn {NE_IP}
+set network-element opt96xx gmpls-options gmpls-mode wson
+commit
+set routing-instances DCN-routing-instance interface eth-ua/1.0
+set routing-instances DCN-routing-instance protocols ospf area 1.1.1.1 interface all
+commit
+
+
+CARD CONFIG =====>
+
+set chassis slot {slot_no} {card_name} port {port_no} port-type {port_type}
+set chassis slot {slot_no} {card_name} enable //if service card
+set chassis slot {slot_no} {card_name} port {port_no} port-type {port_type} otuc-options line-rate 100 //if service card
+//if there are multiple ports active on tm1200, above line will be replicated
+
+
+FIBER CONNECTIVITY ====>
+
+set chassis slot {slot_no} {card_name} port {port_no} fiber-connectivity {int/external} {uni/bidirectional} peer-slot {peer_slot_no} peer-port {peer_port_no}
+//To connect all the cards belonging to a chassis = internal
+//if tm1200/ROADM on different NE = external
+//if fiber-connectivity = external, fiber-length=1, peer-ne=remote_node_ip
+//only direct connection
+
+DATA LINK ====>
+
+set chassis slot {slot_no} {card_name} port {port_no} admin-state up port-type {port_type} gmpls-options nni remote-mpls-if-index {remote_mpls_if_index} remote-node {remote_node_ip}
+//To connect different NEs
+//data link is not established if one of the node is service card (tm1200).
+//so basically data link is established only after the data has passed through the first card.
+//only established if card exists in another network element, not if same.
+//only direct connection
+
+MPLS PATH ====>
+
+set routing-instances GMPLS-routing-instance protocols mpls path p1 lambda {remote_node_ip} interface-id {remote_mpls_if_index}
+//only on head end
+//every node will be accounted here for in remote_node_ip whether it is directly connected or not
+
+

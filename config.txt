@@ -1,0 +1,131 @@
+R1 - 10.52.31.141 head
+R2 - 10.52.31.145 transit
+R3 - 10.52.31.146 – tail
+R1 (tm1200----roadm20cf-8X12-----roadm-9f):
+============================================
+ 
++++++++++++++++++++ OSPF +++++++++++++++++++
+ 
+set chassis slot ua phylinux enable port 1 admin-state up
+set interfaces eth-ua/1 unit 0 family inet address 192.168.12.54/24
+commit
+set system management-mode dcn 10.52.31.141
+set network-element opt96xx gmpls-options gmpls-mode wson
+commit
+set routing-instances DCN-routing-instance interface eth-ua/1.0
+set routing-instances DCN-routing-instance protocols ospf area 1.1.1.1 interface all
+commit
+ 
++++++++++++++++++++ Card Configuration and Fiber Connectivity ++++++++++++++++++++++++++++++++
+ 
+set chassis slot u0 roadm-20cf-8x12 port 10 port-type ochp admin-state up
+ 
+set chassis slot u2 tm1200 enable
+ 
+set chassis slot u2 tm1200 port 0 port-type otua otuc-options line-rate 100
+ 
+
+set chassis slot u2 tm1200 port 0 fiber-connectivity internal bidirectional peer-slot u0 peer-port 10
+set chassis slot u0 roadm-20cf-8x12 port 10 fiber-connectivity internal bidirectional peer-slot u2 peer-port 0
+commit
+set chassis slot u0 roadm-20cf-8x12 port 3 port-type ots gmpls-options uni
+commit
+set chassis slot u0 roadm-20cf-8x12 port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u4 peer-port 1
+set chassis slot u4 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u0 peer-port 1
+set chassis slot u0 roadm-20cf-8x12 port 2 port-type ots fiber-connectivity internal bidirectional peer-slot u8 peer-port 1
+set chassis slot u8 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u0 peer-port 2
+commit
+ 
++++++++++++++++++++++++++++++++ Data Link ++++++++++++++++++++++++++++++++++++++++++++
+set chassis slot u4 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497408 remote-node 10.52.31.145
+set chassis slot u8 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497536 remote-node 10.52.31.145
+commit
+ 
+++++++++++++++++++++++++++++++ MPLS Path +++++++++++++++++++++++++++++++++++++++++++++++
+set routing-instances GMPLS-routing-instance protocols mpls path p1 lambda 10.52.31.145 interface-id 2038497408
+set routing-instances GMPLS-routing-instance protocols mpls path p1 lambda 10.52.31.146 interface-id 2038497472
+commit
+++++++++++++++++++++++++++++++++++ Trail +++++++++++++++++++++++++++++++++++++++++++++++++
+set trails WSON_TRAIL_1 ingress-endpoint otua-u2/0 egress-endpoint otua-u2/0 egress-ne-id 10.52.31.146 ingress-terminal-ne-id 10.52.31.141 egress-terminal-ne-id 10.52.31.146
+set trails WSON_TRAIL_1 restoration-recovery restoration-priority 2
+set trails WSON_TRAIL_1 frequency-grid ingress-end-point channel-spacing spacing-c-s-6-25 grid-type itu-t-dwdm-flex first-wavelength 13.25 last-wavelength 61.5
+set trails WSON_TRAIL_1 frequency-grid egress-end-point channel-spacing spacing-c-s-6-25 grid-type itu-t-dwdm-flex first-wavelength 13.25 last-wavelength 61.5
+set trails WSON_TRAIL_1 impairments ingress-end-point spectral-bandwidth 75 osnr-tolerance 10 max-accumulated-power 10 
+set trails WSON_TRAIL_1 impairments egress-end-point spectral-bandwidth 75 osnr-tolerance 10 max-accumulated-power 10
+set trails WSON_TRAIL_1 tunnels main lsp egress-endpoint ochp-u0/10 ingress-endpoint ochp-u0/10 egress-ne-id 10.52.31.146 wavelength 17 spectral-bandwidth 75
+set trails WSON_TRAIL_1 tunnels main lsp provisioned-path-name p1
+set trails WSON_TRAIL_1 tunnels restoration_main lsp provisioned-path-name empty egress-endpoint ochp-u0/10 ingress-endpoint ochp-u0/10 egress-ne-id 10.52.31.146
+set trails WSON_TRAIL_1 nms-trail-id eci1
+set trails WSON_TRAIL_1 restoration-recovery wtr-period 1
+set trails WSON_TRAIL_1 frequency-grid ingress-end-point channel-spacing spacing-c-s-6-25 grid-type itu-t-dwdm-flex first-frequency 191.325 last-frequency 196.15
+set trails WSON_TRAIL_1 frequency-grid egress-end-point channel-spacing spacing-c-s-6-25 grid-type itu-t-dwdm-flex first-frequency 191.325 last-frequency 196.15
+set trails WSON_TRAIL_1 wavelength-change-capability disabled
+commit
+R2:
+===
++++++++++++++++++++ OSPF +++++++++++++++++++
+set chassis slot ua phylinux enable port 1 admin-state up
+set interfaces eth-ua/1 unit 0 family inet address 192.168.12.89/24
+commit
+set system management-mode dcn 10.52.31.145
+set network-element opt96xx gmpls-options gmpls-mode wson
+commit
+set routing-instances DCN-routing-instance interface eth-ua/1.0
+set routing-instances DCN-routing-instance protocols ospf area 1.1.1.1 interface all
+commit
+ 
++++++++++++++++++++ Card Configuration and Fiber Connectivity ++++++++++++++++++++++++++++++++
+set chassis slot u4 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u6 peer-port 1
+set chassis slot u6 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u4 peer-port 1
+set chassis slot u8 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u10 peer-port 1
+set chassis slot u10 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u8 peer-port 1
+commit
+ 
++++++++++++++++++++++++++++++++ Data Link ++++++++++++++++++++++++++++++++++++++++++++
+set chassis slot u4 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497408 remote-node 10.52.31.141
+set chassis slot u8 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497536 remote-node 10.52.31.141
+commit
+set chassis slot u6 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497472 remote-node 10.52.31.146
+commit
+set chassis slot u10 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497600 remote-node 10.52.31.146
+commit
+
+ 
+===
+R3 (roadm-9f-------- roadm20cf-8X12----- tm1200):
+====================================================
+ 
++++++++++++++++++++ OSPF +++++++++++++++++++
+ 
+set chassis slot ua phylinux enable port 1 admin-state up
+set interfaces eth-ua/1 unit 0 family inet address 192.168.12.31/24
+commit
+set system management-mode dcn 10.52.31.146
+set network-element opt96xx gmpls-options gmpls-mode wson
+commit
+set routing-instances DCN-routing-instance interface eth-ua/1.0
+set routing-instances DCN-routing-instance protocols ospf area 1.1.1.1 interface all
+commit
++++++++++++++++++++ Card Configuration and Fiber Connectivity ++++++++++++++++++++++++++++++++
+ 
+set chassis slot u0 roadm-20cf-8x12 port 10 port-type ochp admin-state up
+set chassis slot u2 tm1200 enable
+set chassis slot u2 tm1200 port 0 port-type otua otuc-options line-rate 100
+set chassis slot u2 tm1200 port 0 fiber-connectivity internal bidirectional peer-slot u0 peer-port 10
+set chassis slot u0 roadm-20cf-8x12 port 10 fiber-connectivity internal bidirectional peer-slot u2 peer-port 0
+commit
+set chassis slot u0 roadm-20cf-8x12 port 3 port-type ots gmpls-options uni
+commit
+set chassis slot u0 roadm-20cf-8x12 port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u6 peer-port 1
+set chassis slot u6 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u0 peer-port 1
+commit
+set chassis slot u0 roadm-20cf-8x12 port 2 port-type ots fiber-connectivity internal bidirectional peer-slot u10 peer-port 1
+set chassis slot u10 roadm-9f port 1 port-type ots fiber-connectivity internal bidirectional peer-slot u0 peer-port 2
+commit
+ 
++++++++++++++++++++++++++++++++ Data Link ++++++++++++++++++++++++++++++++++++++++++++
+ 
+set chassis slot u6 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497472 remote-node 10.52.31.145
+commit
+set chassis slot u10 roadm-9f port 0 admin-state up port-type ots gmpls-options nni remote-mpls-if-index 2038497600 remote-node 10.52.31.145
+commit

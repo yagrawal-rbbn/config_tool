@@ -1,0 +1,113 @@
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 20%;
+  padding: 10px;
+  border-right: 1px solid #ccc;
+  background-color: #f7f7f7;
+}
+
+.sidebar h3 {
+  text-align: center;
+}
+
+.draggable-node {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #007bff;
+  background-color: #fff;
+  cursor: grab;
+  text-align: center;
+  font-weight: bold;
+}
+
+.canvas-container {
+  width: 80%;
+  height: 100%;
+}
+
+.config-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 250px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.config-panel h4 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.config-panel label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.config-panel input,
+.config-panel select {
+  width: 100%;
+  padding: 5px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.config-panel .checkbox-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.config-panel .checkbox-label input {
+    width: auto;
+    margin-right: 10px;
+}
+
+.save-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.save-btn:hover {
+    background-color: #218838;
+}
+
+.generated-config {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    width: 300px;
+    height: 400px;
+    background: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    z-index: 10;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.generated-config h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.generated-config pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
