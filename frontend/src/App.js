@@ -127,8 +127,26 @@ const App = () => {
   }, []);
 
   const deleteNode = (nodeId) => {
-    setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-    setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+    setNodes((currentNodes) => {
+      const nodesToDelete = new Set();
+      const queue = [nodeId];
+      
+      while (queue.length > 0) {
+        const currentId = queue.shift();
+        if (!nodesToDelete.has(currentId)) {
+          nodesToDelete.add(currentId);
+          currentNodes.forEach(node => {
+            if (node.parentNode === currentId) {
+              queue.push(node.id);
+            }
+          });
+        }
+      }
+
+      setEdges((eds) => eds.filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target)));
+      return currentNodes.filter((node) => !nodesToDelete.has(node.id));
+    });
+
     setSelectedElement(null);
   };
 
