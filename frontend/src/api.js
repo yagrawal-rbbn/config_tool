@@ -1,4 +1,4 @@
-const transformToBackendPayload = (nodes, edges) => {
+export const transformToBackendPayload = (nodes, edges) => {
     const network_elements = nodes
         .filter(n => n.type === 'ne')
         .map(neNode => ({
@@ -14,52 +14,35 @@ const transformToBackendPayload = (nodes, edges) => {
         }));
 
     const connections = edges.map(edge => {
-        const sourceNE = nodes.find(n => n.id === edge.source);
-        const targetNE = nodes.find(n => n.id === edge.target);
+        const sourcePortNode = nodes.find(n => n.id === edge.source);
+        const targetPortNode = nodes.find(n => n.id === edge.target);
 
-        if (!sourceNE || !targetNE) return null;
+        if (!sourcePortNode || !targetPortNode) return null;
 
-        let sourceCardId = null;
-        let targetCardId = null;
+        const sourceCardNode = nodes.find(n => n.id === sourcePortNode.parentNode);
+        const targetCardNode = nodes.find(n => n.id === targetPortNode.parentNode);
 
-        // Find the source card
-        const sourceNeElement = network_elements.find(ne => ne.id === edge.source);
-        if (sourceNeElement) {
-            for (const card of sourceNeElement.cards) {
-                if (card.ports.some(p => p.id === edge.sourceHandle)) {
-                    sourceCardId = card.id;
-                    break;
-                }
-            }
-        }
+        if (!sourceCardNode || !targetCardNode) return null;
 
-        // Find the target card
-        const targetNeElement = network_elements.find(ne => ne.id === edge.target);
-        if (targetNeElement) {
-            for (const card of targetNeElement.cards) {
-                if (card.ports.some(p => p.id === edge.targetHandle)) {
-                    targetCardId = card.id;
-                    break;
-                }
-            }
-        }
+        const sourceNeNode = nodes.find(n => n.id === sourceCardNode.parentNode);
+        const targetNeNode = nodes.find(n => n.id === targetCardNode.parentNode);
 
-        if (!sourceCardId || !targetCardId) return null;
+        if (!sourceNeNode || !targetNeNode) return null;
 
         return {
             id: edge.id,
             source: {
-                ne: edge.source,
-                card: sourceCardId,
-                port: edge.sourceHandle
+                ne: sourceNeNode.id,
+                card: sourceCardNode.id,
+                port: sourcePortNode.id
             },
             destination: {
-                ne: edge.target,
-                card: targetCardId,
-                port: edge.targetHandle
+                ne: targetNeNode.id,
+                card: targetCardNode.id,
+                port: targetPortNode.id
             },
             is_internal: edge.data?.is_internal || false,
-            is_bidirectional: edge.data?.is_bidirectional || true,
+            is_bidirectional: edge.data?.is_bidirectional ?? true,
         };
     }).filter(c => c !== null);
 

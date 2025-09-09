@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ConfigPanel = ({ selectedElement, updateNodeConfig }) => {
+const ConfigPanel = ({ selectedElement, updateNodeConfig, deleteNode, updateEdgeConfig }) => {
   if (!selectedElement) {
     return null;
   }
@@ -11,6 +11,18 @@ const ConfigPanel = ({ selectedElement, updateNodeConfig }) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
     updateNodeConfig(id, name, newValue);
+  };
+
+  const handleDelete = () => {
+    if (selectedElement) {
+      deleteNode(selectedElement.id);
+    }
+  };
+
+  const handleEdgeChange = (e) => {
+    const { name, value } = e.target;
+    const isBidirectional = value === 'bidirectional';
+    updateEdgeConfig(id, 'is_bidirectional', isBidirectional);
   };
 
   const renderNEConfig = () => (
@@ -54,11 +66,29 @@ const ConfigPanel = ({ selectedElement, updateNodeConfig }) => {
     </>
   );
 
+  const renderEdgeConfig = () => (
+    <>
+      <h4>Link Configuration</h4>
+      <label>Direction</label>
+      <select name="direction" value={data.is_bidirectional ? 'bidirectional' : 'unidirectional'} onChange={handleEdgeChange}>
+        <option value="bidirectional">Bidirectional</option>
+        <option value="unidirectional">Unidirectional</option>
+      </select>
+      <p>Type: {data.is_internal ? 'Internal' : 'External'}</p>
+    </>
+  );
+
   return (
     <div className="config-panel">
       {type === 'ne' && renderNEConfig()}
       {type === 'card' && renderCardConfig()}
       {type === 'port' && renderPortConfig()}
+      {type === 'edge' && renderEdgeConfig()}
+      {selectedElement && (
+        <button onClick={handleDelete} className="delete-btn">
+          Delete Component
+        </button>
+      )}
     </div>
   );
 };

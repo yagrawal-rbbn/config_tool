@@ -20,7 +20,7 @@
 
 .react-flow__node-port {
   border: 2px solid lightyellow;
-  background: transparent;
+  background: lightyellow;
 }
 
 .react-flow__handle {

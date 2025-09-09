@@ -104,6 +104,23 @@
     background-color: #218838;
 }
 
+.clear-btn {
+    position: absolute;
+    top: 10px;
+    left: 200px;
+    padding: 10px 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.clear-btn:hover {
+    background-color: #c82333;
+}
+
 .generated-config {
     position: absolute;
     bottom: 10px;
@@ -138,4 +155,19 @@
   border-radius: 5px;
   z-index: 100;
   font-size: 12px;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
 }

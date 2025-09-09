@@ -15,7 +15,7 @@ import ConfigPanel from './components/ConfigPanel';
 import NENode from './components/nodes/NENode';
 import CardNode from './components/nodes/CardNode';
 import PortNode from './components/nodes/PortNode';
-import { generateConfiguration } from './api';
+import { generateConfiguration, transformToBackendPayload } from './api';
 
 import './App.css';
 import './components/nodes/node-styles.css';
@@ -28,16 +28,22 @@ const nodeTypes = {
 
 const App = () => {
   const reactFlowWrapper = useRef(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(JSON.parse(localStorage.getItem('diagram-nodes')) || []);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(JSON.parse(localStorage.getItem('diagram-edges')) || []);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
   const [generatedConfig, setGeneratedConfig] = useState('');
+  
   
   const [drawingMode, setDrawingMode] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState(null);
   const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('diagram-nodes', JSON.stringify(nodes));
+    localStorage.setItem('diagram-edges', JSON.stringify(edges));
+  }, [nodes, edges]);
 
   useEffect(() => {
     const handleEsc = (event) => {
@@ -52,10 +58,52 @@ const App = () => {
     };
   }, []);
 
-  const id = useRef(0);
-  const getId = (type) => `${type}_${id.current++}`;
+  const ids = useRef({ ne: 0, card: 0, port: 0 });
+  const getId = (type) => {
+    ids.current[type] = (ids.current[type] || 0) + 1;
+    return `${type}_${ids.current[type]}`;
+  };
 
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  const onConnect = useCallback((params) => {
+    setEdges((eds) => {
+      const isSourceInvolved = eds.some(edge => edge.source === params.source || edge.target === params.source);
+      const isTargetInvolved = eds.some(edge => edge.source === params.target || edge.target === params.target);
+
+      if (isSourceInvolved || isTargetInvolved) {
+        alert("A port can only be connected to one other port.");
+        return eds;
+      }
+
+      const sourcePortNode = nodes.find(n => n.id === params.source);
+      const targetPortNode = nodes.find(n => n.id === params.target);
+
+      if (!sourcePortNode || !targetPortNode) {
+        return eds; // Should not happen
+      }
+
+      const sourceCardNode = nodes.find(n => n.id === sourcePortNode.parentNode);
+      const targetCardNode = nodes.find(n => n.id === targetPortNode.parentNode);
+
+      if (!sourceCardNode || !targetCardNode) {
+        return eds; // Should not happen
+      }
+
+      const sourceNeNode = nodes.find(n => n.id === sourceCardNode.parentNode);
+      const targetNeNode = nodes.find(n => n.id === targetCardNode.parentNode);
+
+      const isInternal = sourceNeNode && targetNeNode && sourceNeNode.id === targetNeNode.id;
+
+      const newEdge = {
+        ...params,
+        data: {
+          is_internal: isInternal,
+          is_bidirectional: true // Default to bidirectional
+        }
+      };
+
+      return addEdge(newEdge, eds);
+    });
+  }, [nodes, setEdges]);
 
   const onNodeClick = useCallback((event, node) => {
     const findNode = (id) => nodes.find(n => n.id === id);
@@ -69,6 +117,34 @@ const App = () => {
         data: element.data
     });
   }, [nodes]);
+
+  const onEdgeClick = useCallback((event, edge) => {
+    setSelectedElement({
+        id: edge.id,
+        type: 'edge',
+        data: edge.data || {}
+    });
+  }, []);
+
+  const deleteNode = (nodeId) => {
+    setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+    setEdges((eds) => eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId));
+    setSelectedElement(null);
+  };
+
+  const updateEdgeConfig = (edgeId, field, value) => {
+    setEdges((eds) =>
+      eds.map((edge) => {
+        if (edge.id === edgeId) {
+          return { ...edge, data: { ...edge.data, [field]: value } };
+        }
+        return edge;
+      })
+    );
+    if (selectedElement && selectedElement.id === edgeId) {
+        setSelectedElement(prev => ({...prev, data: {...prev.data, [field]: value}}));
+    }
+  };
 
   const updateNodeConfig = (nodeId, field, value) => {
     setNodes((nds) =>
@@ -88,11 +164,17 @@ const App = () => {
     }
   };
   
-  const handleGenerateConfig = async () => {
-      const config = await generateConfiguration(nodes, edges);
-      if (config) {
-        setGeneratedConfig(config);
-      }
+  const handleGenerateConfig = () => {
+      const payload = transformToBackendPayload(nodes, edges);
+      setGeneratedConfig(JSON.stringify(payload, null, 2));
+  };
+
+  const handleClearDiagram = () => {
+    localStorage.removeItem('diagram-nodes');
+    localStorage.removeItem('diagram-edges');
+    setNodes([]);
+    setEdges([]);
+    ids.current = { ne: 0, card: 0, port: 0 };
   };
 
   const onMouseDown = (event) => {
@@ -146,8 +228,10 @@ const App = () => {
     let newNode;
     let parentNode = null;
 
+    const currentNodes = reactFlowInstance.getNodes();
+
     if (drawingMode === 'card') {
-      parentNode = nodes.find(n => 
+      parentNode = currentNodes.find(n => 
         n.type === 'ne' &&
         x >= n.position.x &&
         y >= n.position.y &&
@@ -161,7 +245,7 @@ const App = () => {
         return;
       }
     } else if (drawingMode === 'port') {
-      parentNode = nodes.find(n =>
+      parentNode = currentNodes.find(n =>
         n.type === 'card' &&
         n.positionAbsolute &&
         x >= n.positionAbsolute.x &&
@@ -265,6 +349,7 @@ const App = () => {
             onConnect={onConnect}
             onInit={setReactFlowInstance}
             onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
             nodeTypes={nodeTypes}
             fitView
             panOnDrag={!drawingMode}
@@ -278,14 +363,16 @@ const App = () => {
             <Background variant="dots" gap={12} size={1} />
           </ReactFlow>
         </div>
-        <ConfigPanel selectedElement={selectedElement} updateNodeConfig={updateNodeConfig} />
+        <ConfigPanel selectedElement={selectedElement} updateNodeConfig={updateNodeConfig} deleteNode={deleteNode} updateEdgeConfig={updateEdgeConfig} />
         <button onClick={handleGenerateConfig} className="save-btn">Generate Configuration</button>
+        <button onClick={handleClearDiagram} className="clear-btn">Clear Diagram</button>
         {generatedConfig && (
             <div className="generated-config">
                 <h2>Generated Configuration</h2>
                 <pre>{generatedConfig}</pre>
             </div>
         )}
+        
       </ReactFlowProvider>
     </div>
   );
