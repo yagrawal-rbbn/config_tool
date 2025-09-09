@@ -1,0 +1,14 @@
+.custom-node {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: #fff;
+  text-align: center;
+  min-width: 100px;
+}
+
+.custom-node span.node-id {
+  cursor: pointer !important; /* Added !important */
+  color: blue;
+  text-decoration: underline;
+}

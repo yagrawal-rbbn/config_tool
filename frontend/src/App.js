@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -20,9 +20,6 @@ import { generateConfiguration } from './api';
 import './App.css';
 import './components/nodes/node-styles.css';
 
-let id = 0;
-const getId = (type) => `${type}_${id++}`;
-
 const nodeTypes = {
   ne: NENode,
   card: CardNode,
@@ -35,70 +32,30 @@ const App = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
-  const [connectionSource, setConnectionSource] = useState(null);
   const [generatedConfig, setGeneratedConfig] = useState('');
+  
+  const [drawingMode, setDrawingMode] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [startPos, setStartPos] = useState(null);
+  const [preview, setPreview] = useState(null);
 
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.keyCode === 27) {
+        setDrawingMode(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
 
-  const onDragOver = useCallback((event) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
   }, []);
 
-  const onDrop = useCallback(
-    (event) => {
-      event.preventDefault();
+  const id = useRef(0);
+  const getId = (type) => `${type}_${id.current++}`;
 
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const type = event.dataTransfer.getData('application/reactflow');
-
-      if (typeof type === 'undefined' || !type) {
-        return;
-      }
-
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
-      });
-      
-      const newNodeId = getId(type);
-      let newNode;
-
-      switch (type) {
-        case 'ne':
-          newNode = {
-            id: newNodeId,
-            type,
-            position,
-            data: { id: newNodeId, label: `Network Element ${id}`, NE_IP: '', role: '' },
-          };
-          break;
-        case 'card':
-          newNode = {
-            id: newNodeId,
-            type,
-            position,
-            data: { id: newNodeId, label: `Card ${id}`, card_name: '', slot_no: '', service_card: false },
-            extent: 'parent',
-          };
-          break;
-        case 'port':
-           newNode = {
-            id: newNodeId,
-            type,
-            position,
-            data: { id: newNodeId, label: `Port ${id}`, port_no: '', port_type: '', if_index: '' },
-            extent: 'parent',
-          };
-          break;
-        default:
-          return;
-      }
-
-      setNodes((nds) => nds.concat(newNode));
-    },
-    [reactFlowInstance, setNodes]
-  );
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   const onNodeClick = useCallback((event, node) => {
     const findNode = (id) => nodes.find(n => n.id === id);
@@ -106,44 +63,19 @@ const App = () => {
     
     if(!element) return;
 
-    let selectedType = element.type;
-    
     setSelectedElement({
         id: element.id,
-        type: selectedType,
+        type: element.type,
         data: element.data
     });
   }, [nodes]);
-
-  const onPortClick = (event, portNode) => {
-    event.stopPropagation();
-
-    if (!connectionSource) {
-        setConnectionSource(portNode);
-        setNodes(nds => nds.map(n => ({...n, data: {...n.data, isSelected: n.id === portNode.id}})));
-    } else {
-        if (connectionSource.id !== portNode.id) {
-            const newEdge = {
-                id: `edge-${connectionSource.id}-${portNode.id}`,
-                source: connectionSource.parentNode,
-                target: portNode.parentNode,
-                sourceHandle: connectionSource.id,
-                targetHandle: portNode.id,
-            };
-            setEdges(eds => addEdge(newEdge, eds));
-        }
-        setConnectionSource(null);
-        setNodes(nds => nds.map(n => ({...n, data: {...n.data, isSelected: false}})));
-    }
-  };
 
   const updateNodeConfig = (nodeId, field, value) => {
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === nodeId) {
           const newData = { ...node.data, [field]: value };
-          // Also update label if it's a primary field
-          if (field === 'card_name' || field === 'port_no') {
+          if (field === 'NE_IP' || field === 'card_name' || field === 'port_no') {
               newData.label = `${value}`;
           }
           return { ...node, data: newData };
@@ -163,11 +95,168 @@ const App = () => {
       }
   };
 
+  const onMouseDown = (event) => {
+    if (!drawingMode || !reactFlowInstance) return;
+    event.preventDefault();
+    
+    const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+    const position = {
+      x: event.clientX - reactFlowBounds.left,
+      y: event.clientY - reactFlowBounds.top,
+    };
+
+    setIsDrawing(true);
+    setStartPos(position);
+    setPreview({ x: position.x, y: position.y, width: 0, height: 0 });
+  };
+
+  const onMouseMove = (event) => {
+    if (!isDrawing) return;
+    event.preventDefault();
+
+    const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+    const position = {
+      x: event.clientX - reactFlowBounds.left,
+      y: event.clientY - reactFlowBounds.top,
+    };
+
+    const width = Math.abs(position.x - startPos.x);
+    const height = Math.abs(position.y - startPos.y);
+    const newX = Math.min(position.x, startPos.x);
+    const newY = Math.min(position.y, startPos.y);
+
+    setPreview({ x: newX, y: newY, width, height });
+  };
+
+  const onMouseUp = (event) => {
+    if (!isDrawing || !preview || preview.width === 0 || preview.height === 0) {
+      setIsDrawing(false);
+      setPreview(null);
+      return;
+    }
+    event.preventDefault();
+
+    const projectedPosition = reactFlowInstance.project({
+        x: preview.x,
+        y: preview.y,
+    });
+
+    const { x, y, width, height } = { ...preview, ...projectedPosition };
+    const newNodeId = getId(drawingMode);
+    let newNode;
+    let parentNode = null;
+
+    if (drawingMode === 'card') {
+      parentNode = nodes.find(n => 
+        n.type === 'ne' &&
+        x >= n.position.x &&
+        y >= n.position.y &&
+        x + width <= n.position.x + n.data.width &&
+        y + height <= n.position.y + n.data.height
+      );
+      if (!parentNode) {
+        alert('Cards can only be placed inside Network Elements.');
+        setIsDrawing(false);
+        setPreview(null);
+        return;
+      }
+    } else if (drawingMode === 'port') {
+      parentNode = nodes.find(n =>
+        n.type === 'card' &&
+        n.positionAbsolute &&
+        x >= n.positionAbsolute.x &&
+        y >= n.positionAbsolute.y &&
+        x + width <= n.positionAbsolute.x + n.data.width &&
+        y + height <= n.positionAbsolute.y + n.data.height
+      );
+      if (!parentNode) {
+        alert('Ports can only be placed inside Cards.');
+        setIsDrawing(false);
+        setPreview(null);
+        return;
+      }
+    }
+
+    const position = {
+      x: parentNode ? x - (parentNode.positionAbsolute ? parentNode.positionAbsolute.x : parentNode.position.x) : x,
+      y: parentNode ? y - (parentNode.positionAbsolute ? parentNode.positionAbsolute.y : parentNode.position.y) : y,
+    };
+
+    const data = {
+      id: newNodeId,
+      label: newNodeId,
+      width,
+      height,
+    };
+
+    switch (drawingMode) {
+      case 'ne':
+        data.NE_IP = '';
+        data.role = '';
+        break;
+      case 'card':
+        data.card_name = '';
+        data.slot_no = '';
+        data.service_card = false;
+        break;
+      case 'port':
+        data.port_no = '';
+        data.port_type = '';
+        data.if_index = '';
+        break;
+      default:
+        break;
+    }
+
+    newNode = {
+      id: newNodeId,
+      type: drawingMode,
+      position,
+      data,
+      parentNode: parentNode ? parentNode.id : undefined,
+      extent: parentNode ? 'parent' : undefined,
+    };
+
+    setNodes((nds) => nds.concat(newNode));
+    setIsDrawing(false);
+    setPreview(null);
+  };
+
   return (
     <div className="app">
       <ReactFlowProvider>
-        <Sidebar />
-        <div className="canvas-container" ref={reactFlowWrapper}>
+        <Sidebar drawingMode={drawingMode} setDrawingMode={setDrawingMode} />
+        <div 
+          className="canvas-container" 
+          ref={reactFlowWrapper}
+        >
+          {drawingMode && (
+            <div
+              className="drawing-overlay"
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+            >
+              {preview && (
+                <div
+                  className="preview-node"
+                  style={{
+                    position: 'absolute',
+                    left: preview.x,
+                    top: preview.y,
+                    width: preview.width,
+                    height: preview.height,
+                    border: '1px dashed #000',
+                  }}
+                />
+              )}
+            </div>
+          )}
+          {drawingMode && (
+            <div className="drawing-prompt">
+              Drawing mode active. Press Esc to cancel.
+            </div>
+          )}
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -175,11 +264,14 @@ const App = () => {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onInit={setReactFlowInstance}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
             onNodeClick={onNodeClick}
             nodeTypes={nodeTypes}
             fitView
+            panOnDrag={!drawingMode}
+            zoomOnScroll={!drawingMode}
+            panOnScroll={false}
+            nodesDraggable={!drawingMode}
+            style={{ pointerEvents: drawingMode ? 'none' : 'auto' }}
           >
             <Controls />
             <MiniMap />

@@ -14,19 +14,35 @@
   text-align: center;
 }
 
-.draggable-node {
+.selectable-node {
   padding: 10px;
   margin-bottom: 10px;
   border: 1px solid #007bff;
   background-color: #fff;
-  cursor: grab;
+  cursor: pointer;
   text-align: center;
   font-weight: bold;
+}
+
+.selectable-node.selected {
+  background-color: #007bff;
+  color: #fff;
 }
 
 .canvas-container {
   width: 80%;
   height: 100%;
+  position: relative;
+}
+
+.drawing-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  cursor: crosshair;
 }
 
 .config-panel {
@@ -110,4 +126,16 @@
 .generated-config pre {
     white-space: pre-wrap;
     word-wrap: break-word;
+}
+
+.drawing-prompt {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  z-index: 100;
+  font-size: 12px;
 }

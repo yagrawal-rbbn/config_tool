@@ -1,52 +1,26 @@
-.react-flow__node-ne {
-    background: #cce5ff;
-    border: 1px solid #007bff;
-    border-radius: 5px;
-    padding: 10px;
-    min-width: 200px;
+.node-label {
+  position: absolute;
+  top: -20px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
 }
 
-.react-flow__node-ne .node-header {
-    background-color: #007bff;
-    color: white;
-    padding: 5px;
-    border-radius: 3px 3px 0 0;
-    text-align: center;
-    font-weight: bold;
+.react-flow__node-ne {
+  border: 2px solid skyblue;
+  background: transparent;
 }
 
 .react-flow__node-card {
-    background: #e9ecef;
-    border: 1px solid #6c757d;
-    border-radius: 5px;
-    padding: 5px;
-    margin: 5px;
-    min-width: 180px;
-}
-
-.react-flow__node-card .node-header {
-    background-color: #6c757d;
-    color: white;
-    padding: 5px;
-    border-radius: 3px 3px 0 0;
-    text-align: center;
-    font-size: 0.9em;
+  border: 2px solid lightgreen;
+  background: transparent;
 }
 
 .react-flow__node-port {
-    background: #fff;
-    border: 1px solid #343a40;
-    border-radius: 3px;
-    padding: 5px;
-    margin: 5px;
-    text-align: center;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.port-source-selected {
-    background-color: #ffc107 !important;
+  border: 2px solid lightyellow;
+  background: transparent;
 }
 
 .react-flow__handle {

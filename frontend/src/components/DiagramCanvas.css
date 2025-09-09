@@ -1,0 +1,15 @@
+.reactflow-wrapper { /* Added this rule */
+  position: relative;
+}
+
+.reactflow-wrapper.drawing-mode {
+  cursor: crosshair;
+}
+
+.react-flow__node {
+  cursor: grab; /* Default cursor for draggable nodes */
+}
+
+.react-flow__node:hover {
+  cursor: pointer; /* Change cursor to pointer on hover over node */
+}

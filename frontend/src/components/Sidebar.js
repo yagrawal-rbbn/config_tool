@@ -1,21 +1,25 @@
 import React from 'react';
 
-const onDragStart = (event, nodeType) => {
-  event.dataTransfer.setData('application/reactflow', nodeType);
-  event.dataTransfer.effectAllowed = 'move';
-};
-
-const Sidebar = () => {
+const Sidebar = ({ drawingMode, setDrawingMode }) => {
   return (
     <aside className="sidebar">
-      <h3>Draggable Items</h3>
-      <div className="draggable-node" onDragStart={(event) => onDragStart(event, 'ne')} draggable>
+      <h3>Components</h3>
+      <div 
+        className={`selectable-node ${drawingMode === 'ne' ? 'selected' : ''}`} 
+        onClick={() => setDrawingMode('ne')}
+      >
         Network Element
       </div>
-      <div className="draggable-node" onDragStart={(event) => onDragStart(event, 'card')} draggable>
+      <div 
+        className={`selectable-node ${drawingMode === 'card' ? 'selected' : ''}`} 
+        onClick={() => setDrawingMode('card')}
+      >
         Card
       </div>
-      <div className="draggable-node" onDragStart={(event) => onDragStart(event, 'port')} draggable>
+      <div 
+        className={`selectable-node ${drawingMode === 'port' ? 'selected' : ''}`} 
+        onClick={() => setDrawingMode('port')}
+      >
         Port
       </div>
     </aside>
