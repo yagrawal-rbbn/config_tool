@@ -58,6 +58,27 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+    // Initialize IDs from localStorage
+    const loadedNodes = JSON.parse(localStorage.getItem('diagram-nodes')) || [];
+    if (loadedNodes.length > 0) {
+      const initialIds = { ne: 0, card: 0, port: 0 };
+      loadedNodes.forEach(node => {
+        const parts = node.id.split('_');
+        if (parts.length === 2) {
+          const [type, number] = parts;
+          if (type in initialIds) {
+            const num = parseInt(number, 10);
+            if (!isNaN(num) && num > initialIds[type]) {
+              initialIds[type] = num;
+            }
+          }
+        }
+      });
+      ids.current = initialIds;
+    }
+  }, []); // Run only once on mount
+
   const ids = useRef({ ne: 0, card: 0, port: 0 });
   const getId = (type) => {
     ids.current[type] = (ids.current[type] || 0) + 1;
@@ -127,26 +148,23 @@ const App = () => {
   }, []);
 
   const deleteNode = (nodeId) => {
-    setNodes((currentNodes) => {
-      const nodesToDelete = new Set();
-      const queue = [nodeId];
-      
-      while (queue.length > 0) {
-        const currentId = queue.shift();
-        if (!nodesToDelete.has(currentId)) {
-          nodesToDelete.add(currentId);
-          currentNodes.forEach(node => {
-            if (node.parentNode === currentId) {
-              queue.push(node.id);
-            }
-          });
-        }
+    const nodesToDelete = new Set();
+    const queue = [nodeId];
+    
+    while (queue.length > 0) {
+      const currentId = queue.shift();
+      if (!nodesToDelete.has(currentId)) {
+        nodesToDelete.add(currentId);
+        nodes.forEach(node => {
+          if (node.parentNode === currentId) {
+            queue.push(node.id);
+          }
+        });
       }
+    }
 
-      setEdges((eds) => eds.filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target)));
-      return currentNodes.filter((node) => !nodesToDelete.has(node.id));
-    });
-
+    setNodes((nds) => nds.filter((node) => !nodesToDelete.has(node.id)));
+    setEdges((eds) => eds.filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target)));
     setSelectedElement(null);
   };
 

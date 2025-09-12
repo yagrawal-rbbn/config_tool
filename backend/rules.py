@@ -143,19 +143,28 @@ def find_connecting_port(source_ne: NetworkElement, dest_ne: NetworkElement, dia
 def generate_config(diagram: Diagram):
     config = ""
     for ne in diagram.network_elements:
-        config += f"--- {ne.id} ({ne.role}) ---\n"
-        config += "\n".join(generate_ospf_config(ne)) + "\n"
+        config += f"--- {ne.NE_IP} ({ne.role}) ---\n"
         
+        config += "+++++OSPF Configuration+++++\n\n"
+        config += "\n".join(generate_ospf_config(ne)) + "\n"
+        config += "\n"
+
+        config += "+++++Card Configuration+++++\n\n"
         for card in ne.cards:
             config += "\n".join(generate_card_config(card)) + "\n"
         config += "\n"
 
-        # Pass current NE to generate_fiber_connectivity_config
+        config += "+++++Fiber Connectivity Configuration+++++\n\n"
         for conn in diagram.connections:
             if conn.source.ne == ne.id or conn.destination.ne == ne.id:
                 config += "\n".join(generate_fiber_connectivity_config(conn, diagram, ne)) + "\n"
-        
+        config += "\n"
+
+        config += "+++++Data Link Configuration+++++\n\n"
         config += "\n".join(generate_data_link_config(ne, diagram)) + "\n"
+        config += "\n"
+
+        config += "+++++MPLS Path Configuration+++++\n\n"
         config += "\n".join(generate_mpls_path_config(ne, diagram)) + "\n"
         config += "\n"
 
