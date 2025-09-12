@@ -182,9 +182,11 @@ const App = () => {
     }
   };
   
-  const handleGenerateConfig = () => {
-      const payload = transformToBackendPayload(nodes, edges);
-      setGeneratedConfig(JSON.stringify(payload, null, 2));
+  const handleGenerateConfig = async () => {
+      const config = await generateConfiguration(nodes, edges);
+      if (config) {
+        setGeneratedConfig(config);
+      }
   };
 
   const handleClearDiagram = () => {
