@@ -31,6 +31,7 @@ class Connection(BaseModel):
     destination: ConnectionSource
     is_internal: bool
     is_bidirectional: bool
+    is_dd: Optional[bool] = False
 
 class Diagram(BaseModel):
     network_elements: List[NetworkElement] = []

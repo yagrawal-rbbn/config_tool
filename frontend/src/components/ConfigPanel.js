@@ -25,6 +25,10 @@ const ConfigPanel = ({ selectedElement, updateNodeConfig, deleteNode, updateEdge
     updateEdgeConfig(id, 'is_bidirectional', isBidirectional);
   };
 
+  const handleIsDDChange = (e) => {
+    updateEdgeConfig(id, 'is_dd', e.target.checked);
+  };
+
   const renderNEConfig = () => (
     <>
       <h4>Network Element Config</h4>
@@ -75,6 +79,12 @@ const ConfigPanel = ({ selectedElement, updateNodeConfig, deleteNode, updateEdge
         <option value="unidirectional">Unidirectional</option>
       </select>
       <p>Type: {data.is_internal ? 'Internal' : 'External'}</p>
+      {!data.is_internal && (
+        <label className="checkbox-label">
+          <input name="is_dd" type="checkbox" checked={data.is_dd || false} onChange={handleIsDDChange} />
+          Degree-Degree
+        </label>
+      )}
     </>
   );
 

@@ -35,7 +35,12 @@ def generate_card_config(card: Card):
     config.append("commit")
     return config
 
-def generate_fiber_connectivity_config(conn: Connection, diagram: Diagram):
+def generate_fiber_connectivity_config(conn: Connection, diagram: Diagram, current_ne: NetworkElement):
+    """Generate fiber connectivity config based on current NE being processed"""
+    # Skip if external connection and is_dd is False
+    if not conn.is_internal and not conn.is_dd:
+        return []
+
     source_ne = next((ne for ne in diagram.network_elements if ne.id == conn.source.ne), None)
     source_card = next((card for card in source_ne.cards if card.id == conn.source.card), None) 
     source_port = next((port for port in source_card.ports if port.id == conn.source.port), None)
@@ -48,14 +53,30 @@ def generate_fiber_connectivity_config(conn: Connection, diagram: Diagram):
     conn_type = "internal" if conn.is_internal else "external"
     direction = "bidirectional" if conn.is_bidirectional else "unidirectional"
 
-    base_cmd = f"set chassis slot {source_card.slot_no} {source_card.card_name} port {source_port.port_no} fiber-connectivity {conn_type} {direction}"
-    
     if conn_type == "internal":
-        config.append(f"{base_cmd} peer-slot {dest_card.slot_no} peer-port {dest_port.port_no}")
+        # For internal connections, generate both directions
+        config.extend([
+            f"set chassis slot {source_card.slot_no} {source_card.card_name} port {source_port.port_no} "
+            f"fiber-connectivity {conn_type} {direction} peer-slot {dest_card.slot_no} peer-port {dest_port.port_no}",
+            f"set chassis slot {dest_card.slot_no} {dest_card.card_name} port {dest_port.port_no} "
+            f"fiber-connectivity {conn_type} {direction} peer-slot {source_card.slot_no} peer-port {source_port.port_no}"
+        ])
     else:
-        config.append(f"{base_cmd} peer-slot {dest_card.slot_no} peer-port {dest_port.port_no} peer-ne {dest_ne.NE_IP} fiber-length 1")
-    
-    config.append("commit")
+        # For external connections
+        if current_ne.id == source_ne.id:
+            local_card, local_port = source_card, source_port
+            remote_card, remote_port, remote_ne = dest_card, dest_port, dest_ne
+        else:
+            local_card, local_port = dest_card, dest_port
+            remote_card, remote_port, remote_ne = source_card, source_port, source_ne
+
+        config.append(
+            f"set chassis slot {local_card.slot_no} {local_card.card_name} port {local_port.port_no} "
+            f"fiber-connectivity {conn_type} {direction} peer-slot {remote_card.slot_no} "
+            f"peer-port {remote_port.port_no} peer-ne {remote_ne.NE_IP} fiber-length 1"
+        )
+    if config:
+        config.append("commit")
     return config
 def generate_data_link_config(ne: NetworkElement, diagram: Diagram):
     """Generate data link config for a network element, including all its connections"""
@@ -129,11 +150,11 @@ def generate_config(diagram: Diagram):
             config += "\n".join(generate_card_config(card)) + "\n"
         config += "\n"
 
+        # Pass current NE to generate_fiber_connectivity_config
         for conn in diagram.connections:
-            if conn.source.ne == ne.id:
-                config += "\n".join(generate_fiber_connectivity_config(conn, diagram)) + "\n"
+            if conn.source.ne == ne.id or conn.destination.ne == ne.id:
+                config += "\n".join(generate_fiber_connectivity_config(conn, diagram, ne)) + "\n"
         
-        # Generate data links for all connections of this NE
         config += "\n".join(generate_data_link_config(ne, diagram)) + "\n"
         config += "\n".join(generate_mpls_path_config(ne, diagram)) + "\n"
         config += "\n"

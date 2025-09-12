@@ -43,6 +43,7 @@ export const transformToBackendPayload = (nodes, edges) => {
             },
             is_internal: edge.data?.is_internal || false,
             is_bidirectional: edge.data?.is_bidirectional ?? true,
+            is_dd: edge.data?.is_dd || false,
         };
     }).filter(c => c !== null);
 
