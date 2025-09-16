@@ -4,10 +4,21 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from models import Diagram, NetworkElement, Card, Port, Connection
 
+_ip_counter = 1  # Global counter for IP addresses
+
 def generate_ospf_config(ne: NetworkElement):
+    global _ip_counter
+    
+    # Reset counter if it exceeds 254 (valid range for last octet is 1-254)
+    if _ip_counter > 254:
+        _ip_counter = 1
+        
+    ip_last_octet = _ip_counter
+    _ip_counter += 1  # Increment for next NE
+    
     return [
         "set chassis slot ua phylinux enable port 1 admin-state up",
-        f"set interfaces eth-ua/1 unit 0 family inet address 192.168.12.08/24", # Assuming /24, will need to be dynamic
+        f"set interfaces eth-ua/1 unit 0 family inet address 192.168.12.{ip_last_octet}/24",
         "commit",
         f"set system management-mode dcn {ne.NE_IP}",
         "set network-element opt96xx gmpls-options gmpls-mode wson",
