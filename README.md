@@ -21,8 +21,8 @@ A visual network configuration tool that allows users to design network topologi
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/network-config-tool.git
-cd network-config-tool
+git clone https://github.com/yagrawal-rbbn/config_tool.git
+cd config_tool
 ```
 
 2. Install backend dependencies:
