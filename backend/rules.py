@@ -97,15 +97,19 @@ def generate_data_link_config(ne: NetworkElement, diagram: Diagram):
             local_card = next((card for card in ne.cards if card.id == conn.source.card), None)
             local_port = next((port for port in local_card.ports if port.id == conn.source.port), None)
             remote_ne = next((n for n in diagram.network_elements if n.id == conn.destination.ne), None)
+            remote_card = next((card for card in remote_ne.cards if card.id == conn.destination.card), None)
+            remote_port = next((port for port in remote_card.ports if port.id == conn.destination.port), None)
         else:
             local_card = next((card for card in ne.cards if card.id == conn.destination.card), None)
             local_port = next((port for port in local_card.ports if port.id == conn.destination.port), None)
             remote_ne = next((n for n in diagram.network_elements if n.id == conn.source.ne), None)
+            remote_card = next((card for card in remote_ne.cards if card.id == conn.source.card), None)
+            remote_port = next((port for port in remote_card.ports if port.id == conn.source.port), None)
 
         config.extend([
             f"set chassis slot {local_card.slot_no} {local_card.card_name} port {local_port.port_no} "
             f"admin-state up port-type {local_port.port_type} gmpls-options nni "
-            f"remote-mpls-if-index {local_port.if_index} remote-node {remote_ne.NE_IP}",
+            f"remote-mpls-if-index {remote_port.if_index} remote-node {remote_ne.NE_IP}",
             "commit"
         ])
     
