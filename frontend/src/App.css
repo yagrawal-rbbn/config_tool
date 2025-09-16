@@ -1,38 +1,16 @@
+
 .app {
   display: flex;
   height: 100vh;
-}
-
-.sidebar {
-  width: 20%;
-  padding: 10px;
-  border-right: 1px solid #ccc;
-  background-color: #f7f7f7;
-}
-
-.sidebar h3 {
-  text-align: center;
-}
-
-.selectable-node {
-  padding: 10px;
-  margin-bottom: 10px;
-  border: 1px solid #007bff;
-  background-color: #fff;
-  cursor: pointer;
-  text-align: center;
-  font-weight: bold;
-}
-
-.selectable-node.selected {
-  background-color: #007bff;
-  color: #fff;
+  background-color: var(--dark-bg);
+  color: var(--light-text);
 }
 
 .canvas-container {
-  width: 80%;
+  flex-grow: 1;
   height: 100%;
   position: relative;
+  background-color: #1e1e3f;
 }
 
 .drawing-overlay {
@@ -47,39 +25,54 @@
 
 .config-panel {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 250px;
-  padding: 10px;
-  background: #fff;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  z-index: 10;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  padding: 20px;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .config-panel h4 {
   margin-top: 0;
   text-align: center;
+  color: var(--primary-accent);
+  font-size: 1.2em;
 }
 
 .config-panel label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   font-weight: bold;
+  color: var(--light-text);
 }
 
 .config-panel input,
 .config-panel select {
   width: 100%;
-  padding: 5px;
-  margin-bottom: 10px;
+  padding: 10px;
+  margin-bottom: 15px;
   box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--secondary-accent);
+  color: var(--light-text);
+  border-radius: 5px;
 }
 
 .config-panel .checkbox-label {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .config-panel .checkbox-label input {
@@ -87,87 +80,196 @@
     margin-right: 10px;
 }
 
-.save-btn {
+
+
+.top-center-container {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    padding: 10px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
     z-index: 10;
+}
+
+.save-btn {
+    background-color: var(--primary-accent);
+    color: white;
 }
 
 .save-btn:hover {
-    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
 }
 
 .clear-btn {
-    position: absolute;
-    top: 10px;
-    left: 200px;
-    padding: 10px 20px;
-    background-color: #dc3545;
+    background: linear-gradient(45deg, var(--secondary-accent), #c36dff);
     color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 10;
 }
 
 .clear-btn:hover {
-    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
 }
 
 .generated-config {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    width: 300px;
-    height: 400px;
-    background: #fff;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 10;
-    padding: 10px;
-    overflow-y: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 600px;
+    height: 80%;
+    max-height: 500px;
+    padding: 20px;
+    color: var(--light-text);
+    display: flex;
+    flex-direction: column;
 }
 
 .generated-config h2 {
     margin-top: 0;
     text-align: center;
+    color: var(--primary-accent);
+    flex-shrink: 0;
 }
 
 .generated-config pre {
     white-space: pre-wrap;
     word-wrap: break-word;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 5px;
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
 .drawing-prompt {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
+  bottom: 20px;
+  left: 20px;
+  background-color: rgba(233, 69, 96, 0.8);
   color: white;
-  padding: 5px 10px;
-  border-radius: 5px;
+  padding: 10px 15px;
+  border-radius: 20px;
   z-index: 100;
-  font-size: 12px;
+  font-size: 0.9em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .delete-btn {
-    background-color: #dc3545;
+    background: linear-gradient(45deg, #ff5252, #ff1744);
     color: white;
     border: none;
-    padding: 10px;
+    padding: 12px;
     border-radius: 5px;
     cursor: pointer;
     width: 100%;
     margin-top: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: all 0.3s ease;
 }
 
 .delete-btn:hover {
-    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 82, 82, 0.4);
 }
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--secondary-accent);
+  border-top-color: var(--primary-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 1000;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 600ms linear;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -70px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  background-color: var(--primary-accent);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+  background-color: var(--secondary-accent);
+  transform: scale(1.05);
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  color: var(--primary-accent);
+  transform: rotate(90deg);
+}
+

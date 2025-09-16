@@ -1,5 +1,7 @@
-.reactflow-wrapper { /* Added this rule */
+
+.reactflow-wrapper {
   position: relative;
+  background-color: var(--dark-bg);
 }
 
 .reactflow-wrapper.drawing-mode {
@@ -7,9 +9,43 @@
 }
 
 .react-flow__node {
-  cursor: grab; /* Default cursor for draggable nodes */
+  cursor: grab;
 }
 
 .react-flow__node:hover {
-  cursor: pointer; /* Change cursor to pointer on hover over node */
+  cursor: pointer;
+}
+
+.react-flow__background {
+  background-color: #1e1e3f !important;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.2) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.react-flow__controls {
+  background-color: rgba(42, 42, 62, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--secondary-accent);
+}
+
+.react-flow__controls button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--light-text);
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  transition: all 0.3s ease;
+}
+
+.react-flow__controls button:hover {
+  background-color: var(--primary-accent);
+}
+
+.react-flow__minimap {
+  background-color: rgba(42, 42, 62, 0.8);
+  border-radius: 8px;
+  border: 1px solid var(--secondary-accent);
 }

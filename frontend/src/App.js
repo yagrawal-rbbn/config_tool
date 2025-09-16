@@ -18,6 +18,7 @@ import PortNode from './components/nodes/PortNode';
 import { generateConfiguration, transformToBackendPayload } from './api';
 
 import './App.css';
+import './common.css';
 import './components/nodes/node-styles.css';
 
 const nodeTypes = {
@@ -33,6 +34,8 @@ const App = () => {
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   const [selectedElement, setSelectedElement] = useState(null);
   const [generatedConfig, setGeneratedConfig] = useState('');
+  const [showGeneratedConfig, setShowGeneratedConfig] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   
   const [drawingMode, setDrawingMode] = useState(null);
@@ -78,6 +81,12 @@ const App = () => {
       ids.current = initialIds;
     }
   }, []); // Run only once on mount
+
+  useEffect(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.fitView();
+    }
+  }, [reactFlowInstance]);
 
   const ids = useRef({ ne: 0, card: 0, port: 0 });
   const getId = (type) => {
@@ -201,10 +210,13 @@ const App = () => {
   };
   
   const handleGenerateConfig = async () => {
+      setIsLoading(true);
       const config = await generateConfiguration(nodes, edges);
       if (config) {
         setGeneratedConfig(config);
+        setShowGeneratedConfig(true);
       }
+      setIsLoading(false);
   };
 
   const handleClearDiagram = () => {
@@ -344,6 +356,26 @@ const App = () => {
     setPreview(null);
   };
 
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const circle = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+    circle.classList.add("ripple");
+
+    const ripple = button.getElementsByClassName("ripple")[0];
+
+    if (ripple) {
+      ripple.remove();
+    }
+
+    button.appendChild(circle);
+  };
+
   return (
     <div className="app">
       <ReactFlowProvider>
@@ -352,6 +384,7 @@ const App = () => {
           className="canvas-container" 
           ref={reactFlowWrapper}
         >
+          {isLoading && <div className="loading-spinner"></div>}
           {drawingMode && (
             <div
               className="drawing-overlay"
@@ -368,7 +401,7 @@ const App = () => {
                     top: preview.y,
                     width: preview.width,
                     height: preview.height,
-                    border: '1px dashed #000',
+                    border: '1px dashed #fff',
                   }}
                 />
               )}
@@ -389,7 +422,7 @@ const App = () => {
             onNodeClick={onNodeClick}
             onEdgeClick={onEdgeClick}
             nodeTypes={nodeTypes}
-            fitView
+            onlyRenderVisibleElements
             panOnDrag={!drawingMode}
             zoomOnScroll={!drawingMode}
             panOnScroll={false}
@@ -402,11 +435,21 @@ const App = () => {
           </ReactFlow>
         </div>
         <ConfigPanel selectedElement={selectedElement} updateNodeConfig={updateNodeConfig} deleteNode={deleteNode} updateEdgeConfig={updateEdgeConfig} />
-        <button onClick={handleGenerateConfig} className="save-btn">Generate Configuration</button>
-        <button onClick={handleClearDiagram} className="clear-btn">Clear Diagram</button>
-        {generatedConfig && (
-            <div className="generated-config">
+        <div className="top-center-container">
+          <div className="tooltip">
+            <button onClick={(e) => {handleGenerateConfig(); createRipple(e);}} className="save-btn action-btn">Generate Configuration</button>
+            <span className="tooltiptext">Generate the configuration for the current diagram</span>
+          </div>
+          <div className="tooltip">
+            <button onClick={(e) => {handleClearDiagram(); createRipple(e);}} className="clear-btn action-btn">Clear Diagram</button>
+            <span className="tooltiptext">Clear the entire diagram</span>
+          </div>
+        </div>
+        {showGeneratedConfig && (
+            <div className="generated-config panel">
+                <button onClick={() => setShowGeneratedConfig(false)} className="close-btn">X</button>
                 <h2>Generated Configuration</h2>
+                <button onClick={() => navigator.clipboard.writeText(generatedConfig)} className="copy-btn">Copy</button>
                 <pre>{generatedConfig}</pre>
             </div>
         )}

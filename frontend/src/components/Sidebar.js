@@ -1,4 +1,5 @@
 import React from 'react';
+import './ComponentPalette.css';
 
 const Sidebar = ({ drawingMode, setDrawingMode }) => {
   return (

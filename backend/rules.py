@@ -118,21 +118,6 @@ def is_valid_data_link(conn: Connection, diagram: Diagram):
             not dest_card.service_card and
             conn.source.ne != conn.destination.ne)
 
-def generate_mpls_path_config(ne: NetworkElement, diagram: Diagram):
-    if ne.role != "head":
-        return []
-
-    config = []
-    # Include paths to all destination NEs, not just direct connections
-    for dest_ne in diagram.network_elements:
-        if dest_ne.id != ne.id:
-            # Find connecting port's interface index
-            connecting_port = find_connecting_port(ne, dest_ne, diagram)
-            if connecting_port:
-                config.append(f"set routing-instances GMPLS-routing-instance protocols mpls path p1 lambda {dest_ne.NE_IP} interface-id {connecting_port.if_index}")
-    
-    config.append("commit")
-    return config
 
 def find_connecting_port(source_ne: NetworkElement, dest_ne: NetworkElement, diagram: Diagram):
     for conn in diagram.connections:
@@ -162,10 +147,6 @@ def generate_config(diagram: Diagram):
 
         config += "+++++Data Link Configuration+++++\n\n"
         config += "\n".join(generate_data_link_config(ne, diagram)) + "\n"
-        config += "\n"
-
-        config += "+++++MPLS Path Configuration+++++\n\n"
-        config += "\n".join(generate_mpls_path_config(ne, diagram)) + "\n"
         config += "\n"
 
     return config

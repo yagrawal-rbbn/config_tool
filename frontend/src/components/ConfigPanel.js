@@ -89,7 +89,7 @@ const ConfigPanel = ({ selectedElement, updateNodeConfig, deleteNode, updateEdge
   );
 
   return (
-    <div className="config-panel">
+    <div className="config-panel panel">
       {type === 'ne' && renderNEConfig()}
       {type === 'card' && renderCardConfig()}
       {type === 'port' && renderPortConfig()}

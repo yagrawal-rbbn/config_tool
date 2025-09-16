@@ -1,30 +1,71 @@
 .node-label {
   position: absolute;
-  top: -20px;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  font-size: 12px;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1em;
   font-weight: bold;
+  color: var(--light-text);
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.react-flow__node {
+  transition: all 0.3s ease;
+  transform-origin: center center;
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform: translate3d(0,0,0);
+  will-change: transform;
 }
 
 .react-flow__node-ne {
-  border: 2px solid skyblue;
-  background: transparent;
+  border: 2px solid var(--primary-accent);
+  background: rgba(233, 69, 96, 0.1);
+  border-radius: 10px;
 }
 
 .react-flow__node-card {
-  border: 2px solid lightgreen;
-  background: transparent;
+  border: 2px solid var(--secondary-accent);
+  background: rgba(157, 78, 221, 0.1);
+  border-radius: 8px;
 }
 
 .react-flow__node-port {
-  border: 2px solid lightyellow;
-  background: lightyellow;
+  border: 2px solid #ffc600;
+  background: rgba(255, 198, 0, 0.2);
+  border-radius: 50%;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+}
+.react-flow__node:active {
+  cursor: grabbing;
+}
+.react-flow__handle {
+    width: 10px;
+    height: 10px;
+    background: #9d4edd;
+    border: 2px solid #f0f0f0;
+    border-radius: 50%;
+    transition: all 0.3s ease;
 }
 
-.react-flow__handle {
-    width: 8px;
-    height: 8px;
-    background: #555;
+.react-flow__handle:hover {
+    background: #e94560;
+    transform: scale(1.2);
+}
+
+.react-flow__edge {
+  will-change: transform;
+  pointer-events: stroke;
+}
+.react-flow__edge-path {
+    stroke: var(--secondary-accent);
+    stroke-width: 2;
+    transition: stroke 0.3s ease;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+    stroke: var(--primary-accent);
 }

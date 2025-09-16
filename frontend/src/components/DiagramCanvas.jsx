@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -23,6 +23,16 @@ function DiagramCanvas() {
   const [selectedNode, setSelectedNode] = useState(null);
   const [isDrawingNE, setIsDrawingNE] = useState(false);
   const { screenToFlowPosition } = useReactFlow();
+
+  useEffect(() => {
+    if (selectedNode) {
+      // Find the updated version of the selected node in the new nodes array
+      const updatedSelectedNode = nodes.find(node => node.id === selectedNode.id);
+      if (updatedSelectedNode && (updatedSelectedNode.position.x !== selectedNode.position.x || updatedSelectedNode.position.y !== selectedNode.position.y)) {
+        setSelectedNode(updatedSelectedNode);
+      }
+    }
+  }, [nodes, selectedNode, setSelectedNode]);
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 

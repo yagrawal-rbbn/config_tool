@@ -16,4 +16,4 @@ function CustomNode({ data, id }) { // Removed onNodeIdClick prop
   );
 }
 
-export default CustomNode;
+export default React.memo(CustomNode);

@@ -1,14 +1,23 @@
+
 .custom-node {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  background: transparent;
   text-align: center;
-  min-width: 100px;
+  min-width: 120px;
+  color: var(--light-text);
+  transition: all 0.3s ease;
 }
 
 .custom-node span.node-id {
-  cursor: pointer !important; /* Added !important */
-  color: blue;
+  cursor: pointer !important;
+  color: var(--primary-accent);
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.1s ease;
+}
+
+.custom-node span.node-id:hover {
+  color: var(--secondary-accent);
   text-decoration: underline;
 }

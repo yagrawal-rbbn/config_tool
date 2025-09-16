@@ -38,4 +38,4 @@ function PropertiesPanel({ nodes, selectedNode, setSelectedNode }) {
   );
 }
 
-export default PropertiesPanel;
+export default React.memo(PropertiesPanel);

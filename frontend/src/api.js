@@ -9,7 +9,10 @@ export const transformToBackendPayload = (nodes, edges) => {
                     ...cardNode.data,
                     ports: nodes
                         .filter(p => p.type === 'port' && p.parentNode === cardNode.id)
-                        .map(portNode => ({...portNode.data, port_no: parseInt(portNode.data.port_no, 10)}))
+                        .map(portNode => {
+                            const port_no = parseInt(portNode.data.port_no, 10);
+                            return {...portNode.data, port_no: isNaN(port_no) ? 0 : port_no};
+                        })
                 }))
         }));
 
